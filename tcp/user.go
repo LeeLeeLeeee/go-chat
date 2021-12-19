@@ -1,13 +1,18 @@
 package tcpserver
 
-import "net"
+import (
+	"errors"
+	"net"
+	"os"
+)
 
 type UserInterface interface {
 	CreateRoom() (int, error)
 	EnterRoom() (bool, error)
 	SendMessage() error
 	ExitRoom() error
-	GetIp() net.Addr
+	ExitChatServer() error
+	GetName() string
 }
 
 type AdminInterface interface {
@@ -16,31 +21,44 @@ type AdminInterface interface {
 }
 
 type User struct {
-	id      int
-	name    string
-	netInfo net.Conn
+	id              int
+	name            string
+	connection      net.Conn
+	chatHistoryFile *os.File
 }
 
-func (user User) CreateRoom() (int, error) {
+func NewUser(id int, name string, user_connection net.Conn) *User {
+	// file, err := os.Create(name + ".txt")
+	// if err != nil {
+	// 	return nil
+	// }
+	return &User{id: id, name: name, connection: user_connection, chatHistoryFile: nil}
+}
+
+func (user *User) CreateRoom() (int, error) {
 	return 0, nil
 }
 
-func (user User) EnterRoom() (bool, error) {
+func (user *User) EnterRoom() (bool, error) {
 	return true, nil
 }
 
-func (user User) SendMessage() error {
+func (user *User) SendMessage() (string, error) {
+	return "", nil
+}
+
+func (user *User) ExitRoom() error {
 	return nil
 }
 
-func (user User) ExitRoom() error {
-	return nil
-}
-
-func (user User) GetIp() net.Addr {
-	return user.netInfo.LocalAddr()
-}
-
-func (user User) GetName() string {
+func (user *User) GetName() string {
 	return user.name
+}
+
+func (user *User) ExitChatServer() error {
+	err := user.connection.Close()
+	if err != nil {
+		return errors.New("exit chat server fail")
+	}
+	return nil
 }
